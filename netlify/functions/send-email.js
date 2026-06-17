@@ -2,8 +2,11 @@
 // Handles all 4 Ride Revivers forms via Resend API
 // API key read from: process.env.RESEND_API_KEY_RIDEREVIVERS (set in Netlify dashboard)
  
-const BUSINESS_EMAIL = "riderevivers780@gmail.com";
-const SENDER_FROM    = "Ride Revivers <riderevivers780@gmail.com>";
+const BUSINESS_EMAIL  = "riderevivers780@gmail.com";
+// onboarding@resend.dev is Resend's shared test domain — works immediately.
+// Once the client's domain is verified in Resend, change this to e.g.:
+// "Ride Revivers <bookings@riderevivers.ca>"
+const SENDER_FROM     = "Ride Revivers <onboarding@resend.dev>";
 const RESEND_ENDPOINT = "https://api.resend.com/emails";
  
 // ── Email template builders ──────────────────────────────────
