@@ -1,19 +1,16 @@
 // netlify/functions/send-email.js
 // Handles all 4 Ride Revivers forms via Resend API
 // API key read from: process.env.RESEND_API_KEY_RIDEREVIVERS (set in Netlify dashboard)
- 
+
 const BUSINESS_EMAIL  = "riderevivers780@gmail.com";
-// onboarding@resend.dev is Resend's shared test domain — works immediately.
-// Once the client's domain is verified in Resend, change this to e.g.:
-// "Ride Revivers <bookings@riderevivers.ca>"
-const SENDER_FROM     = "Ride Revivers <onboarding@resend.dev>";
+const SENDER_FROM     = "Ride Revivers <bookings@riderevivers.ca>";
 const RESEND_ENDPOINT = "https://api.resend.com/emails";
- 
+
 // ── Email template builders ──────────────────────────────────
- 
+
 function buildBookingEmails(data) {
   const { name, phone, email, vehicle, service, notes } = data;
- 
+
   const toBusinessHtml = `
 <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;color:#222;">
   <div style="background:#0a0a0a;padding:24px 32px;border-radius:8px 8px 0 0;">
@@ -32,7 +29,7 @@ function buildBookingEmails(data) {
     <p style="margin:24px 0 0;color:#555;font-size:13px;">Please contact the customer to confirm appointment date and time.</p>
   </div>
 </div>`;
- 
+
   const toCustomerHtml = `
 <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;color:#222;">
   <div style="background:#0a0a0a;padding:24px 32px;border-radius:8px 8px 0 0;">
@@ -48,7 +45,7 @@ function buildBookingEmails(data) {
     <p style="color:#222;font-weight:bold;">Ride Revivers Team</p>
   </div>
 </div>`;
- 
+
   return {
     toBusiness: {
       subject: "New Booking Request - Ride Revivers",
@@ -61,10 +58,10 @@ function buildBookingEmails(data) {
     },
   };
 }
- 
+
 function buildQuoteEmails(data) {
   const { name, phone, email, vehicle, service, condition } = data;
- 
+
   const toBusinessHtml = `
 <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;color:#222;">
   <div style="background:#0a0a0a;padding:24px 32px;border-radius:8px 8px 0 0;">
@@ -83,7 +80,7 @@ function buildQuoteEmails(data) {
     <p style="margin:24px 0 0;color:#555;font-size:13px;">Please contact the customer with pricing and availability.</p>
   </div>
 </div>`;
- 
+
   const toCustomerHtml = `
 <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;color:#222;">
   <div style="background:#0a0a0a;padding:24px 32px;border-radius:8px 8px 0 0;">
@@ -99,7 +96,7 @@ function buildQuoteEmails(data) {
     <p style="color:#222;font-weight:bold;">Ride Revivers Team</p>
   </div>
 </div>`;
- 
+
   return {
     toBusiness: {
       subject: "New Quote Request - Ride Revivers",
@@ -112,10 +109,10 @@ function buildQuoteEmails(data) {
     },
   };
 }
- 
+
 function buildCeramicEmails(data) {
   const { name, phone, email, vehicle, package: pkg, condition, notes } = data;
- 
+
   const toBusinessHtml = `
 <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;color:#222;">
   <div style="background:#0a0a0a;padding:24px 32px;border-radius:8px 8px 0 0;">
@@ -135,7 +132,7 @@ function buildCeramicEmails(data) {
     <p style="margin:24px 0 0;color:#555;font-size:13px;">Please contact the customer with ceramic coating pricing and package information.</p>
   </div>
 </div>`;
- 
+
   const toCustomerHtml = `
 <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;color:#222;">
   <div style="background:#0a0a0a;padding:24px 32px;border-radius:8px 8px 0 0;">
@@ -151,7 +148,7 @@ function buildCeramicEmails(data) {
     <p style="color:#222;font-weight:bold;">Ride Revivers Team</p>
   </div>
 </div>`;
- 
+
   return {
     toBusiness: {
       subject: "New Ceramic Coating Quote Request - Ride Revivers",
@@ -164,10 +161,10 @@ function buildCeramicEmails(data) {
     },
   };
 }
- 
+
 function buildPaintEmails(data) {
   const { name, phone, email, vehicle, package: pkg, condition, notes } = data;
- 
+
   const toBusinessHtml = `
 <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;color:#222;">
   <div style="background:#0a0a0a;padding:24px 32px;border-radius:8px 8px 0 0;">
@@ -187,7 +184,7 @@ function buildPaintEmails(data) {
     <p style="margin:24px 0 0;color:#555;font-size:13px;">Please contact the customer with paint correction recommendations and pricing.</p>
   </div>
 </div>`;
- 
+
   const toCustomerHtml = `
 <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;color:#222;">
   <div style="background:#0a0a0a;padding:24px 32px;border-radius:8px 8px 0 0;">
@@ -203,7 +200,7 @@ function buildPaintEmails(data) {
     <p style="color:#222;font-weight:bold;">Ride Revivers Team</p>
   </div>
 </div>`;
- 
+
   return {
     toBusiness: {
       subject: "New Paint Correction Quote Request - Ride Revivers",
@@ -216,7 +213,7 @@ function buildPaintEmails(data) {
     },
   };
 }
- 
+
 // ── HTML escape helper ───────────────────────────────────────
 function esc(str) {
   if (!str) return '';
@@ -227,12 +224,12 @@ function esc(str) {
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
 }
- 
+
 // ── Resend API sender ────────────────────────────────────────
 async function sendEmail({ to, subject, html, replyTo }) {
   const apiKey = process.env.RESEND_API_KEY_RIDEREVIVERS;
   if (!apiKey) throw new Error("RESEND_API_KEY_RIDEREVIVERS is not set");
- 
+
   const payload = {
     from: SENDER_FROM,
     to: Array.isArray(to) ? to : [to],
@@ -240,7 +237,7 @@ async function sendEmail({ to, subject, html, replyTo }) {
     html,
   };
   if (replyTo) payload.reply_to = replyTo;
- 
+
   const res = await fetch(RESEND_ENDPOINT, {
     method: "POST",
     headers: {
@@ -249,14 +246,14 @@ async function sendEmail({ to, subject, html, replyTo }) {
     },
     body: JSON.stringify(payload),
   });
- 
+
   if (!res.ok) {
     const err = await res.text();
     throw new Error(`Resend API error ${res.status}: ${err}`);
   }
   return res.json();
 }
- 
+
 // ── Netlify Function handler ─────────────────────────────────
 exports.handler = async function (event) {
   // CORS headers
@@ -265,25 +262,25 @@ exports.handler = async function (event) {
     "Access-Control-Allow-Headers": "Content-Type",
     "Content-Type": "application/json",
   };
- 
+
   // Handle CORS preflight
   if (event.httpMethod === "OPTIONS") {
     return { statusCode: 200, headers, body: "" };
   }
- 
+
   if (event.httpMethod !== "POST") {
     return { statusCode: 405, headers, body: JSON.stringify({ error: "Method not allowed" }) };
   }
- 
+
   let data;
   try {
     data = JSON.parse(event.body || "{}");
   } catch {
     return { statusCode: 400, headers, body: JSON.stringify({ error: "Invalid JSON" }) };
   }
- 
+
   const formType = data.form_type || "";
- 
+
   // Validate required fields present in all forms
   if (!data.name || !data.email || !data.phone || !data.vehicle) {
     return {
@@ -292,12 +289,12 @@ exports.handler = async function (event) {
       body: JSON.stringify({ error: "Missing required fields: name, email, phone, vehicle" }),
     };
   }
- 
+
   // Basic email format check
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) {
     return { statusCode: 400, headers, body: JSON.stringify({ error: "Invalid email address" }) };
   }
- 
+
   // Build emails based on form type
   let emails;
   if (formType === "Booking Request") {
@@ -312,7 +309,7 @@ exports.handler = async function (event) {
     // Fallback: treat unknown form types as general quote
     emails = buildQuoteEmails(data);
   }
- 
+
   try {
     // Send business notification
     await sendEmail({
@@ -321,14 +318,14 @@ exports.handler = async function (event) {
       html: emails.toBusiness.html,
       replyTo: data.email, // replies go to the customer
     });
- 
+
     // Send customer confirmation
     await sendEmail({
       to: emails.toCustomer.to,
       subject: emails.toCustomer.subject,
       html: emails.toCustomer.html,
     });
- 
+
     return {
       statusCode: 200,
       headers,
